@@ -27,3 +27,19 @@ rows_before - nrow(census)
 sum(duplicated(census))
 census <- census[!duplicated(census), ]
 nrow(census)
+
+census <- census %>% select(-fnlwgt, -education)
+
+text_cols <- sapply(census, is.character)
+census[text_cols] <- lapply(census[text_cols], trimws)
+
+census$native.country <- ifelse(census$native.country == "United-States", "United-States", "Other")
+
+for (col in names(census)) {
+  if (is.character(census[[col]])) {
+    census[[col]] <- as.factor(census[[col]])
+  }
+}
+
+str(census)
+dim(census)
