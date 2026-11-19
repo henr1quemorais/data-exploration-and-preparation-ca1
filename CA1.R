@@ -24,12 +24,11 @@ round(prop.table(table(census_raw$income)) * 100, 1)
 census <- read.csv("Adult Census Income.csv", na.strings = "?", stringsAsFactors = FALSE)
 colSums(is.na(census)) #missing values
 
-rows_before <- nrow(census) #removing rows with missing value
-census <- na.omit(census)
+census <- na.omit(census) #removing rows with missing value
 
 sum(duplicated(census)) #checking how many duplicates left
 census <- census[!duplicated(census), ]
-nrow(census) ##checking how many rows left
+nrow(census) #checking how many rows left
 
 census <- census %>% select(-fnlwgt, -education) #removing not needed columns
 
@@ -47,3 +46,32 @@ for (col in names(census)) { #text into factors
 
 str(census)
 dim(census)
+
+#Outliers
+
+numeric_cols <- c("age", "education.num", "capital.gain","capital.loss", "hours.per.week")
+count_outliers <- function(x) { #counting outliers
+  q1  <- quantile(x, 0.25)
+  q3  <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  sum(x < q1 - 1.5 * iqr | x > q3 + 1.5 * iqr)
+}
+
+outlier_table <- data.frame( #creating a table that shows the number and percentage of outliers
+  variable = numeric_cols,
+  outliers = sapply(census[numeric_cols], count_outliers)
+)
+outlier_table$percent <- round(outlier_table$outliers / nrow(census) * 100, 1)
+outlier_table
+
+long <- stack(census[c("age", "education.num", "hours.per.week")]) #stacking these columns
+
+#boxplot 
+#red dots = outliers
+ggplot(long, aes(x = ind, y = values)) + geom_boxplot(fill = "lightblue", outlier.colour = "red", outlier.alpha = 0.3) + labs(title = "Age, education and hours per week",
+x = NULL, y = "Value") + theme_minimal(base_size = 14)
+
+#checking gain and loss in the capital
+sum(census$capital.gain == 0) / nrow(census) * 100
+sum(census$capital.loss == 0) / nrow(census) * 100
+sum(census$capital.gain == 99999)
