@@ -20,3 +20,10 @@ round(prop.table(table(census_raw$income)) * 100, 1)
 
 census <- read.csv("Adult Census Income.csv", na.strings = "?", stringsAsFactors = FALSE)
 colSums(is.na(census))
+rows_before <- nrow(census)
+census <- na.omit(census)
+rows_before - nrow(census)
+
+sum(duplicated(census))
+census <- census[!duplicated(census), ]
+nrow(census)
